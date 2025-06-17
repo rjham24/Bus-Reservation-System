@@ -502,6 +502,34 @@ def choose_payment_method():
     print("Payment method confirmed. Thank you for your payment!")
     return choice
 
+import random
+
+def assign_travel_time_based_on_class(bus_class):
+    print("\nChoose travel time:")
+    print("1. Day Travel")
+    print("2. Night Travel")
+
+    day_times = ["7:00 AM", "9:00 AM", "11:00 AM", "1:00 PM", "3:00 PM", "5:00 PM"]
+    night_times = ["7:00 PM", "9:00 PM", "11:00 PM", "1:00 AM", "3:00 AM", "5:00 AM"]
+
+    while True:
+        choice = input("Enter 1 for Day or 2 for Night: ")
+        if choice == '1':
+            time_label = "Day"
+            dep_time = random.choice(day_times)
+            break
+        elif choice == '2':
+            time_label = "Night"
+            dep_time = random.choice(night_times)
+            break
+        else:
+            print("Invalid input. Please enter 1 or 2.")
+
+    print(f"\nYou selected {time_label} travel with {bus_class} bus.")
+    print(f"Departure Time: {dep_time}")
+
+    return time_label, dep_time
+
 
 def choose_meal():
     print("\nMeal Preferences:")
@@ -609,6 +637,7 @@ if CheckUser == 1:
             meal_pref = choose_meal()
 
             bus_class = input("Enter bus class (AC/NON-AC): ").upper()
+            travel_pref, dep_time = assign_travel_time_based_on_class(bus_class)
 
             payment_method = choose_payment_method()
 
@@ -637,6 +666,8 @@ if CheckUser == 1:
                 print(f"Amount Paid     : ₹{booking[8]}")
                 print(f"Payment Method  : {payment_method}")
                 print(f"Meal Preference : {meal_pref}")
+                print(f"Travel Time Pref.    : {travel_pref}")
+                print(f"Departure Time       : {dep_time}")
                 print("-" * 40)
 
             print("\nThank You , We are giving you a registration code. Use this for further reference")
