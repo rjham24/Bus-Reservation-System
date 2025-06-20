@@ -478,10 +478,20 @@ def choose_payment_method():
         choice = input("Enter option number (1-5): ")
         if choice == '1':
             print("You selected Credit Card.")
+            bank = input("Enter your Bank Name : ")
+            last4 = input("Enter last 4 digits of your Credit Card Number: ")
+            cname = input("Enter Cardholder Name: ")
+            print("Processing payment with" , bank, " Credit Card ending in", last4)
+            break
 
             break
         elif choice == '2':
             print("You selected Debit Card.")
+            bank = input("Enter your Bank Name : ")
+            last4 = input("Enter last 4 digits of your Debit Card Number: ")
+            cname = input("Enter Cardholder Name: ")
+            print("Processing payment with" , bank, " Debit Card ending in", last4)
+            break
   
             break
         elif choice == '3':
@@ -491,18 +501,21 @@ def choose_payment_method():
             break
         elif choice == '4':
             print("You selected Net Banking.")
+            bank = input("Enter your Bank Name: ")
+            print("Redirecting to " , bank, " Net Banking portal.")
+            break
 
             break
         elif choice == '5':
             print("You selected Cash on Delivery. Please pay cash to the conductor on board.")
             break
+        
         else:
             print("Invalid option, please select again.")
 
     print("Payment method confirmed. Thank you for your payment!")
     return choice
 
-import random
 
 def assign_travel_time_based_on_class(bus_class):
     print("\nChoose travel time:")
