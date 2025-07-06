@@ -22,7 +22,7 @@ FARE_NON_AC = 300
 #will use for the beginning
 def Beginning():
     cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur", "Rishikesh",
-              "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla"]
+              "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla", "Pune"]
     
     print("\n=== Trip Details ===")
     print("\nThe following are the cities we travel to: " + ", ".join(cities))
@@ -262,18 +262,18 @@ def ShowPlaces():
 
 
 def ShowCities():
-    show_cities = "SELECT DISTINCT _FROM FROM places;"
+    show_cities = "SELECT city_name FROM cities;"   
     cursor.execute(show_cities)
     data = cursor.fetchall()
     count = cursor.rowcount
-    
+
     if not data:
         print("No cities available.")
     else:
         print("\nAvailable Cities:\n")
         for row in data:
             print(">", row[0])
-    
+
     print("Total Number of Cities Retrieved are:", count)
 
 
@@ -294,7 +294,7 @@ def Costing(From, To, select_fare_category, People):
 
     cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur",
               "Rishikesh", "Varanasi", "Amritsar", "Chandigarh", "Jaipur",
-              "Lucknow", "Shimla"]
+              "Lucknow", "Shimla" , "Pune"]
 
     if From not in cities or To not in cities:
         print("\nWe don’t perform booking in one or both of the mentioned cities!")
@@ -420,7 +420,7 @@ def UpdateRow_Booking():
     To = input("Enter the Destination City: ").upper()
     DATE_userInput = input("Please enter date of travel (MM/DD/YYYY): ")
     date = datetime.datetime.strptime(DATE_userInput, '%m/%d/%Y').date().strftime('%m/%d/%Y')
-    cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur", "Rishikesh", "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla"]
+    cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur", "Rishikesh", "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla", "Pune"]
     if From not in cities and To not in cities:
         print("Sorry , we dont travel to that city. change your destination.")
         print(UpdateRow_Booking())
