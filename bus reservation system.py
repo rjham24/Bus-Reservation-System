@@ -121,7 +121,8 @@ def Passenger_Name_Record():
 
         Code = UniqueCode()
         insert = '''INSERT into PassengerNameRecord (First_Name , Last_Name , Age , Gender , PhoneNumber , UniqueCode , Bus_Type , Special_Request)
-                    Values ('{}' , '{}' , '{}' , '{}' , '{}' , '{}', '{}', '{}');'''.format(First_Name, Last_Name, Age_1, Gender_1, PhoneNumber, Code, Bus_Type, Special_Request)
+                    Values ('{}' , '{}' , '{}' , '{}' , '{}' , '{}', '{}', '{}');'''.format(First_Name, Last_Name, Age_1, Gender_1, 
+                                                                                      PhoneNumber, Code, Bus_Type, Special_Request)
 
         cursor.execute(insert)
         person_id.append(cursor.lastrowid)
@@ -241,7 +242,8 @@ def UpdateRow():
         Bus_Type = input("Enter Bus Type (AC / NON-AC): ").strip().upper()
     insert3 = '''Update PassengerNameRecord
                  Set First_Name = '{}' , Last_Name = '{}' , Age = {} , Gender = '{}' , PhoneNumber = {} , Bus_Type = '{}' ,
-                 Special_Request = '{}' where PersonID = {};'''.format(First_Name, Last_Name, Age_1, Gender_1, PhoneNumber, Bus_Type, Special_Request , SerialNumber)
+                 Special_Request = '{}' where PersonID = {};'''.format(First_Name, Last_Name, Age_1, Gender_1, 
+                                                                       PhoneNumber, Bus_Type, Special_Request , SerialNumber)
     cursor.execute(insert3)
     show = '''SELECT * from PassengerNameRecord'''
     cursor.execute(show)
@@ -420,7 +422,8 @@ def UpdateRow_Booking():
     To = input("Enter the Destination City: ").upper()
     DATE_userInput = input("Please enter date of travel (MM/DD/YYYY): ")
     date = datetime.datetime.strptime(DATE_userInput, '%m/%d/%Y').date().strftime('%m/%d/%Y')
-    cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur", "Rishikesh", "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla", "Pune"]
+    cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur", 
+              "Rishikesh", "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla", "Pune"]
     if From not in cities and To not in cities:
         print("Sorry , we dont travel to that city. change your destination.")
         print(UpdateRow_Booking())
