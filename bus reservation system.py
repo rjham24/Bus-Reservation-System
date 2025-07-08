@@ -21,12 +21,13 @@ FARE_NON_AC = 300
 
 #will use for the beginning
 def Beginning():
+    global People  
     cities = ["Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Manali", "Udaipur", "Rishikesh",
               "Varanasi", "Amritsar", "Chandigarh", "Jaipur", "Lucknow", "Shimla", "Pune"]
     
     print("\n=== Trip Details ===")
     print("\nThe following are the cities we travel to: " + ", ".join(cities))
-    
+
     while True:
         From = input("\nPlease enter the Departure City : ").title()
         To = input("\nPlease enter the Destination City : ").title()
@@ -36,7 +37,7 @@ def Beginning():
         else:
             print("Sorry, We don't travel to the mentioned city! Please enter valid cities.")
     
-    print("\nTrip booked from", From, "to", To)
+    print(f"\nTrip booked from {From} to {To}")
 
     print("\n=== Travel Date ===")
     while True:
@@ -48,15 +49,12 @@ def Beginning():
         except ValueError:
             print("\nInvalid date format. Please enter again in MM/DD/YYYY format.")
 
-    print("\nTravel confirmed: From", From, "to", To, "on", date)
-
     cursor.execute("SELECT DISTINCT _FROM FROM Places WHERE _FROM = %s;", (From,))
     data = cursor.fetchall()
     if not data:
         print(" No matching departure city found in database!")
         return
     _FROM = data[0][0]
-    print("FROM:", _FROM)
 
     cursor.execute("SELECT DISTINCT _TO FROM Places WHERE _TO = %s;", (To,))
     data = cursor.fetchall()
@@ -64,7 +62,6 @@ def Beginning():
         print(" No matching destination city found in database!")
         return
     _TO = data[0][0]
-    print("TO:", _TO)
 
     cursor.execute("SELECT Duration, Distance FROM Places WHERE _FROM = %s AND _TO = %s;", (From, To))
     data = cursor.fetchone()
@@ -72,24 +69,23 @@ def Beginning():
         print(f"No route found from {From} to {To} in database!")
         return
     DURATION, DISTANCE = data
-    print("Duration:", DURATION)
-    print("Distance:", DISTANCE)
 
-    def Insertion(i, _FROM, _TO, date, DURATION, DISTANCE):
-        query1 = '''INSERT INTO BOOKING (`_FROM`, `_TO`, `DATE`, `DURATION`, `DISTANCE`)
-                     VALUES (%s, %s, %s, %s, %s);'''
-        cursor.execute(query1, (_FROM, _TO, date, DURATION, DISTANCE))
 
-        query2 = '''UPDATE BOOKING
-                    SET PersonID = %s
-                    WHERE BookingID = (SELECT LAST_INSERT_ID());'''
+    fare_category, _ = select_fare_category()
+    total_cost = Costing(From, To , fare_category, People)
+
+
+    def Insertion(i, _FROM, _TO, date, DURATION, DISTANCE, amount, seat_number, bus_class):
+        query1 = '''INSERT INTO BOOKING (`_FROM`, `_TO`, `DATE`, `DURATION`, `DISTANCE`, `Amount_Paid`, `Seat_Number`, `Bus_Class`)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s);'''
+        cursor.execute(query1, (_FROM, _TO, date, DURATION, DISTANCE, amount, seat_number, bus_class))
+        query2 = '''UPDATE BOOKING SET PersonID = %s WHERE BookingID = (SELECT LAST_INSERT_ID());'''
         cursor.execute(query2, (person_id[i],))
         mycon.commit()
 
-    Costing(From, To , select_fare_category, People)
-
     for i in range(People):
-        Insertion(i, _FROM, _TO, date, DURATION, DISTANCE)
+        Insertion(i, _FROM, _TO, date, DURATION, DISTANCE, total_cost, booked_seats[i], fare_category)
+
 
 
 #will use for adding the details of the passengers
@@ -142,7 +138,7 @@ def Passenger_Name_Record():
 seats = [[None, None, None, None] for _ in range(8)]
 
 def show_seats():
-    print("\nBus Seat Layout (None = Available):")
+    print("\nBus Seat Layout (Empty = Available):")
     for i in range(8):
         row_label = f"Row {i+1}:"
         row_data = " | ".join(["Empty" if seat is None else seat for seat in seats[i]])
@@ -168,8 +164,11 @@ def choose_seat(passenger_name):
         except ValueError:
             print("Invalid input. Please enter valid numbers.")
 
+booked_seats = []  # Move this to global scope if needed
+
 def book_passenger():
-    number_of_people = int(input("\nEnter number of passengers: "))
+    global People
+    number_of_people = People
     total_cost = 0
 
     for _ in range(number_of_people):
@@ -188,10 +187,13 @@ def book_passenger():
         print(f"Selected Bus Type: {bus_type}, Fare: Rs {fare}")
 
         seat_number = choose_seat(passenger_id)
+        booked_seats.append(seat_number)
+
         print("Booking Confirmed for", passenger_id, "at seat", seat_number)
         total_cost += fare
 
     print(f"\nTotal fare for {number_of_people} passengers is Rs {total_cost}")
+
 
 
 def select_fare_category():
@@ -667,24 +669,25 @@ if CheckUser == 1:
             for i in range(People):
                 booking = latest_bookings[i]
                 name = latest_names[i][0]
-                
+    
                 print(f"\nPassenger {i+1}")
                 print("=" * 40)
-                print(f"Name            : {name}")
-                print(f"Booking ID      : {booking[0]}")
-                print(f"From            : {booking[1]}")
-                print(f"To              : {booking[2]}")
-                print(f"Date of Travel  : {booking[3]}")
-                print(f"Duration        : {booking[4]}")
-                print(f"Distance        : {booking[5]}")
-                print(f"Bus Class       : {booking[6]}")
-                print(f"Seat Number     : {booking[7]}")
-                print(f"Amount Paid     : ₹{booking[8]}")
-                print(f"Payment Method  : {payment_method}")
-                print(f"Meal Preference : {meal_pref}")
-                print(f"Travel Time Pref.    : {travel_pref}")
-                print(f"Departure Time       : {dep_time}")
+                print(f"Name              : {name}")
+                print(f"Booking ID        : {booking[0]}")
+                print(f"From              : {booking[1]}")
+                print(f"To                : {booking[2]}")
+                print(f"Date of Travel    : {booking[3]}")
+                print(f"Duration          : {booking[4]}")
+                print(f"Distance          : {booking[5]}")
+                print(f"Bus Class         : {booking[7]}")
+                print(f"Seat Number       : {booking[8]}")
+                print(f"Amount Paid       : ₹{booking[6]}")
+                print(f"Payment Method    : {payment_method}")
+                print(f"Meal Preference   : {meal_pref}")
+                print(f"Travel Time Pref. : {travel_pref}")
+                print(f"Departure Time    : {dep_time}")
                 print("-" * 40)
+
 
             print("\nThank You , We are giving you a registration code. Use this for further reference")
             code = UniqueCode()
