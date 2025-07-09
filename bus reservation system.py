@@ -169,7 +169,6 @@ booked_seats = []  # Move this to global scope if needed
 def book_passenger():
     global People
     number_of_people = People
-    total_cost = 0
 
     for _ in range(number_of_people):
         print("\n------ Passenger Details ------")
@@ -183,16 +182,11 @@ def book_passenger():
         full_name = first + " " + last
         passenger_id = f"{full_name} ({phone})"
 
-        bus_type, fare = select_fare_category()
-        print(f"Selected Bus Type: {bus_type}, Fare: Rs {fare}")
 
         seat_number = choose_seat(passenger_id)
         booked_seats.append(seat_number)
 
         print("Booking Confirmed for", passenger_id, "at seat", seat_number)
-        total_cost += fare
-
-    print(f"\nTotal fare for {number_of_people} passengers is Rs {total_cost}")
 
 
 
@@ -354,22 +348,32 @@ def CancelBookingAndRefund():
         print("Invalid phone number format.")
         return
 
-    # Search for the booking
+    # Split full name into first and last for accurate matching
+    try:
+        first_name, last_name = full_name.split()
+    except ValueError:
+        print("Please enter both first and last name.")
+        return
+
+    # Search for the booking by joining with PASSENGERNAMERECORD
     cursor.execute("""
-        SELECT BookingID, Name, Phone, PaymentMethod, TotalCost
-        FROM BOOKING
-        WHERE LOWER(Name) = %s AND Phone = %s
-    """, (full_name.lower(), phone))
+        SELECT B.BookingID, P.First_Name, P.Last_Name, P.PhoneNumber, B.PaymentMethod, B.Amount_Paid
+        FROM BOOKING B
+        JOIN PASSENGERNAMERECORD P ON B.PersonID = P.PersonID
+        WHERE LOWER(P.First_Name) = %s AND LOWER(P.Last_Name) = %s AND P.PhoneNumber = %s
+    """, (first_name.lower(), last_name.lower(), phone))
     
     result = cursor.fetchone()
 
     if result:
-        booking_id, name, phone, payment_method, amount = result
-        confirm = input(f"\nBooking found: {name} ({phone}), Paid ₹{amount} via {payment_method}.\nDo you want to cancel and proceed with refund? (yes/no): ").lower()
+        booking_id, fname, lname, phone, payment_method, amount = result
+        confirm = input(f"\nBooking found: {fname} {lname} ({phone}), Paid ₹{amount} via {payment_method}.\nDo you want to cancel and proceed with refund? (yes/no): ").lower()
 
         if confirm == 'yes':
             # Refund logic
-            if payment_method.lower() in ['upi', '3']:
+            if not payment_method:
+                print("No payment method recorded. Cannot process refund.")
+            elif payment_method.lower() in ['upi', '3']:
                 print("Refund will be processed to your UPI account within 1–2 business days.")
             elif payment_method.lower() in ['credit card', '1', 'debit card', '2']:
                 print("Refund will be credited to your card within 3–5 business days.")
@@ -378,7 +382,7 @@ def CancelBookingAndRefund():
             else:
                 print("Unknown payment method. Refund may be delayed.")
 
-            # Delete the record
+            # Delete or update the booking
             cursor.execute("DELETE FROM BOOKING WHERE BookingID = %s", (booking_id,))
             mycon.commit()
             print("\nYour booking has been cancelled and refund initiated.\n")
@@ -386,6 +390,7 @@ def CancelBookingAndRefund():
             print("Cancellation aborted.")
     else:
         print("No booking found with the given details.")
+
 
 
 def ShowAllPeople():
@@ -680,8 +685,8 @@ if CheckUser == 1:
                 print(f"Duration          : {booking[4]}")
                 print(f"Distance          : {booking[5]}")
                 print(f"Bus Class         : {booking[7]}")
-                print(f"Seat Number       : {booking[8]}")
-                print(f"Amount Paid       : ₹{booking[6]}")
+                print(f"Seat Number       : {booking[13]}")
+                print(f"Amount Paid       : ₹{booking[12]}")
                 print(f"Payment Method    : {payment_method}")
                 print(f"Meal Preference   : {meal_pref}")
                 print(f"Travel Time Pref. : {travel_pref}")
