@@ -357,7 +357,7 @@ def CancelBookingAndRefund():
 
     # Search for the booking by joining with PASSENGERNAMERECORD
     cursor.execute("""
-        SELECT B.BookingID, P.First_Name, P.Last_Name, P.PhoneNumber, B.PaymentMethod, B.Amount_Paid
+        SELECT B.BookingID, P.PersonID, P.First_Name, P.Last_Name, P.PhoneNumber, B.PaymentMethod, B.Amount_Paid
         FROM BOOKING B
         JOIN PASSENGERNAMERECORD P ON B.PersonID = P.PersonID
         WHERE LOWER(P.First_Name) = %s AND LOWER(P.Last_Name) = %s AND P.PhoneNumber = %s
@@ -366,7 +366,7 @@ def CancelBookingAndRefund():
     result = cursor.fetchone()
 
     if result:
-        booking_id, fname, lname, phone, payment_method, amount = result
+        booking_id, person_id, fname, lname, phone, payment_method, amount = result
         confirm = input(f"\nBooking found: {fname} {lname} ({phone}), Paid ₹{amount} via {payment_method}.\nDo you want to cancel and proceed with refund? (yes/no): ").lower()
 
         if confirm == 'yes':
@@ -377,14 +377,18 @@ def CancelBookingAndRefund():
                 print("Refund will be processed to your UPI account within 1–2 business days.")
             elif payment_method.lower() in ['credit card', '1', 'debit card', '2']:
                 print("Refund will be credited to your card within 3–5 business days.")
+            elif payment_method.lower() in ['net banking', '4']:
+                print("Refund will be credited to your bank account via Net Banking within 3–5 business days.")
             elif payment_method.lower() in ['cash on delivery', '5']:
                 print("Refund to be collected in person at the booking counter.")
             else:
                 print("Unknown payment method. Refund may be delayed.")
 
-            # Delete or update the booking
+            # Delete from both tables
             cursor.execute("DELETE FROM BOOKING WHERE BookingID = %s", (booking_id,))
+            cursor.execute("DELETE FROM PASSENGERNAMERECORD WHERE PersonID = %s", (person_id,))
             mycon.commit()
+
             print("\nYour booking has been cancelled and refund initiated.\n")
         else:
             print("Cancellation aborted.")
@@ -730,31 +734,28 @@ elif CheckUser == 2:
     print(80 * '#')
 
     def MENU():
+        print("NOTE: Adding new bookings or passengers is only allowed in Customer Mode.")
         print("\nMENU")
-        print("1. Add a passenger (Passenger_Name_Record)")
-        print("2. Update a record of the passenger (Passenger_Name_Record)")
-        print("3. Delete a record of the passenger (Passenger_Name_Record)")
-        print("4. Update a record of the passenger (BOOKING)")
-        print("5. Delete a record of the passenger (BOOKING)")
-        print("6. Exit Admin Menu")
+        print("1. Update a record of the passenger (Passenger_Name_Record)")
+        print("2. Delete a record of the passenger (Passenger_Name_Record)")
+        print("3. Update a record of the passenger (BOOKING)")
+        print("4. Delete a record of the passenger (BOOKING)")
+        print("5. Exit Admin Menu")
 
         Input1 = int(input("Enter the number from the Menu to proceed: "))
         if Input1 == 1:
-            Passenger_Name_Record()
-            MENU()
-        elif Input1 == 2:
             UpdateRow()
             MENU()
-        elif Input1 == 3:
+        elif Input1 == 2:
             DeleteRow()
             MENU()
-        elif Input1 == 4:
+        elif Input1 == 3:
             UpdateRow_Booking()
             MENU()
-        elif Input1 == 5:
+        elif Input1 == 4:
             DeleteRow_Booking()
             MENU()
-        elif Input1 == 6:
+        elif Input1 == 5:
             print("Exiting Admin Menu.")
             exit()
         else:
